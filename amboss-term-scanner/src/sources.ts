@@ -13,7 +13,7 @@ export interface TermData {
   categories?: string[];
 }
 
-const UA = { "User-Agent": "Obsidian-AMBOSS-Term-Scanner/1.0 (personal study tool)" };
+const UA = { "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) Obsidian-AMBOSS-Term-Scanner/1.0 (personal study tool)" };
 
 /* ---------------------------- Wikipedia (free) ---------------------------- */
 
@@ -23,7 +23,7 @@ export async function fetchWikipedia(term: string): Promise<TermData | null> {
     "https://en.wikipedia.org/api/rest_v1/page/summary/" +
     encodeURIComponent(term.replace(/ /g, "_"));
   try {
-    const s = await requestJson<any>(sumUrl);
+    const s = await requestJson<any>(sumUrl, UA);
     if (s?.type === "standard" && s.extract) {
       return {
         term,
@@ -38,7 +38,7 @@ export async function fetchWikipedia(term: string): Promise<TermData | null> {
   const searchUrl =
     "https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=" +
     encodeURIComponent(term) + "&srlimit=1&format=json";
-  const searchRes = await requestJson<any>(searchUrl);
+  const searchRes = await requestJson<any>(searchUrl, UA);
   const hit = searchRes?.query?.search?.[0];
   if (!hit) return null;
 
@@ -47,7 +47,7 @@ export async function fetchWikipedia(term: string): Promise<TermData | null> {
   const extractUrl =
     "https://en.wikipedia.org/w/api.php?action=query&prop=extracts|categories&explaintext=1" +
     "&exsectionformat=plain&titles=" + encodeURIComponent(title) + "&cclimit=20&format=json";
-  const extRes = await requestJson<any>(extractUrl);
+  const extRes = await requestJson<any>(extractUrl, UA);
   const page: any = Object.values(extRes?.query?.pages ?? {})[0];
   if (!page) return null;
 
@@ -150,6 +150,233 @@ export async function fetchAmboss(term: string, cookie: string): Promise<TermDat
     summary: item.teaser ?? item.excerpt ?? "",
     details: item.content ?? undefined,
   };
+}
+
+/* ------------------------------------------------------------------ *
+ * Free alternatives evaluated for this plugin (Oct 2026):             *
+ *                                                                     *
+ *  WORKING (programmatic access verified):                            *
+ *   - OLS4 / EBI BioOntology (ols4.readthedocs.io) — free REST API    *
+ *     that aggregates SNOMED CT, FMA (anatomy), UMDNS (drugs), MeSH,  *
+ *     NCIt and many more vocabularies. Covers:                        *
+ *       • SNOMED CT Browser  → ontology=snomed                        *
+ *       • NCI Metathesaurus  → ontology=medgen (maps synonyms across  *
+ *         SNOMED/ICD/RxNorm vocabularies)                             *
+ *       • TA2Viewer          → ontology=fma (Foundational Model of    *
+ *         Anatomy; Terminologia Anatomica itself is license-gated, so  *
+ *         we use FMA as the open anatomy equivalent)                  *
+ *       • MediLexicon/Stedman's drug data → ontology=dron (Drug Ontology;
+ *         UMDNS itself is on OLS but its records are not searchable)            *
+ *   - Wikipedia OpenSearch (used by the "fallback" chain)             *
+ *                                                                     *
+ *  NOT usable programmatically from the plugin (verified Oct 2026):   *
+ *   - DocCheck Flexikon (~80k articles): now behind Cloudflare        *
+ *     (hub.huge-index.com / flexikon.doccheck.com are blocked for     *
+ *     non-browser clients). The old offline Farlex mirror at          *
+ *     theodora.com/wisonline_new returns 404s. We link to the article *
+ *     instead (fetchFlexikonLink).                                    *
+ *   - Merriam-Webster Medical: suggestions endpoint returns HTTP 403  *
+ *     (Cloudflare bot protection). Link-out only.                     *
+ *   - WikiMed (wikimed.eu): Cloudflare challenge; offline app must be *
+ *     downloaded separately — link-out only.                          *
+ *   - MediSearch: AI answer requires an account token                 *
+ *     (medisearch.io/en/health-education); link-out prefilled query.  *
+ *   - OpenEvidence: clinician verification required; link-out only.   *
+ * ------------------------------------------------------------------ */
+
+/* --------------------- OLS4 (EBI Bioontology) core ----------------------- */
+
+interface OlsDoc {
+  iri?: string;
+  label?: string;
+  description?: string[];
+  synonym?: string[];
+  related_synonyms?: string[];
+  obo_id?: string;
+  short_form?: string;
+  ontology_name?: string;
+}
+
+async function olsSearch(term: string, ontology: string, rows = 5): Promise<OlsDoc[]> {
+  const url =
+    "https://www.ebi.ac.uk/ols4/api/search?q=" + encodeURIComponent(term) +
+    `&ontology=${ontology}&rows=${rows}`;
+  try {
+    const res = await requestJson<any>(url, UA);
+    const docs: OlsDoc[] = res?.response?.docs ?? [];
+    // exact-label matches first, then keep API order
+    const norm = term.trim().toLowerCase();
+    docs.sort((a, b) => {
+      const am = (a.label ?? "").toLowerCase() === norm ? 0 : 1;
+      const bm = (b.label ?? "").toLowerCase() === norm ? 0 : 1;
+      return am - bm;
+    });
+    return docs;
+  } catch {
+    return [];
+  }
+}
+
+/** Fetch full term record (synonyms/annotations) for one OLS doc. */
+async function olsTermDetail(doc: OlsDoc): Promise<any | null> {
+  const onto = doc.ontology_name;
+  if (!onto || !doc.iri) return null;
+  try {
+    const url =
+      `https://www.ebi.ac.uk/ols4/api/ontologies/${onto}/terms?iri=` +
+      encodeURIComponent(doc.iri);
+    const res = await requestJson<any>(url, UA);
+    return res?._embedded?.terms?.[0] ?? null;
+  } catch {
+    return null;
+  }
+}
+
+function olsBrowserUrl(ontology: string, doc: OlsDoc): string {
+  if (ontology === "snomed" && doc.iri?.startsWith("http://snomed.info/id/")) {
+    const id = doc.iri.split("/").pop();
+    return `https://browser.ihtsdotools.org/?perspective=full&conceptId1=${id}&edition=MAIN/SNOMEDCT-US&release=-1&languages=en`;
+  }
+  if (doc.obo_id) {
+    return `https://www.ebi.ac.uk/ols4/ontologies/${ontology}/terms?obo_id=${encodeURIComponent(doc.obo_id)}`;
+  }
+  return `https://www.ebi.ac.uk/ols4/search?q=${encodeURIComponent(doc.label ?? "")}`;
+}
+
+async function fetchOls(term: string, ontology: string, sourceLabel: string): Promise<TermData | null> {
+  const docs = await olsSearch(term, ontology);
+  const best = docs[0];
+  if (!best?.label) return null;
+  const detail = await olsTermDetail(best);
+  const synonyms: string[] = Array.from(
+    new Set<string>([
+      ...(detail?.synonyms ?? []),
+      ...(best.related_synonyms ?? []),
+      ...(detail?.annotation?.["alternative label"] ?? []),
+    ])
+  ).filter((s) => s.toLowerCase() !== best.label!.toLowerCase()).slice(0, 10);
+  const desc = (best.description ?? []).join("\n\n");
+  return {
+    term,
+    source: sourceLabel,
+    url: olsBrowserUrl(ontology, best),
+    summary: desc || best.label,
+    details: desc && desc !== best.label ? undefined : `Matched concept: **${best.label}** (${best.obo_id ?? best.short_form ?? ""})`,
+    synonyms: synonyms.length ? synonyms : undefined,
+  };
+}
+
+/** SNOMED CT via EBI OLS4 — official clinical terminology, free API. */
+export async function fetchSnomed(term: string): Promise<TermData | null> {
+  return fetchOls(term, "snomed", "SNOMED CT (via EBI OLS4)");
+}
+
+/** Anatomy terms via FMA through OLS4 (open stand-in for TA2Viewer). */
+export async function fetchAnatomy(term: string): Promise<TermData | null> {
+  return fetchOls(term, "fma", "FMA anatomy (via EBI OLS4)");
+}
+
+/** Drug terms via DRON (Drug Ontology) through OLS4 — free drug lookup. */
+export async function fetchDrugs(term: string): Promise<TermData | null> {
+  return fetchOls(term, "dron", "Drug Ontology DRON (via EBI OLS4)");
+}
+
+/**
+ * NCI Metathesaurus-style cross-vocabulary mapping via MEDGEN on OLS4.
+ * Returns the matched concept plus which vocabularies contain it (annot field).
+ */
+export async function fetchMetathesaurus(term: string): Promise<TermData | null> {
+  const url =
+    "https://www.ebi.ac.uk/ols4/api/search?q=" + encodeURIComponent(term) +
+    "&ontology=medgen&rows=1&select=label,description,synonym,annot,obo_id,iri";
+  try {
+    const res = await requestJson<any>(url, UA);
+    const doc = res?.response?.docs?.[0];
+    if (!doc?.label) return null;
+    const annot: any = doc.annot?.[0] ?? {};
+    const sources: string[] = Object.keys(annot).filter((k) => annot[k]);
+    const desc = (doc.description ?? []).join("\n\n");
+    const oboId: string = doc.obo_id ?? "";
+    return {
+      term,
+      source: "NCI Metathesaurus (MEDGEN via EBI OLS4)",
+      url: oboId
+        ? `https://www.ebi.ac.uk/ols4/ontologies/medgen/terms?obo_id=${encodeURIComponent(oboId)}`
+        : `https://ncim.nlm.nih.gov/NCIM/index.jsp#/semanticNetwork/concept_retrieval?id=${encodeURIComponent(term)}`,
+      summary: desc || doc.label,
+      details: sources.length
+        ? `Appears in ${sources.length} biomedical vocabularies, e.g.: ${sources.slice(0, 12).map((s) => `\`${s}\``).join(", ")}`
+        : undefined,
+      synonyms: (doc.synonym ?? []).filter((s: string) => s.toLowerCase() !== doc.label.toLowerCase()).slice(0, 10),
+    };
+  } catch {
+    return null;
+  }
+}
+
+/* --------------------------- Link-out sources ---------------------------- */
+/* These sites block programmatic access (Cloudflare/account walls), so we   *
+ * create a note containing a direct link (+ snippet if available).          */
+
+export function fetchFlexikonLink(term: string): TermData {
+  const slug = term.trim().replace(/\s+/g, "_");
+  return {
+    term,
+    source: "DocCheck Flexikon (link-out — site blocks automated fetching)",
+    url: `https://www.flexikon.doccheck.com/en/${encodeURIComponent(slug)}`,
+    summary: `Encyclopedia article for "${term}" on DocCheck Flexikon (~80,000 medical articles). Click the source link to read it in your browser.`,
+  };
+}
+
+export function fetchMWMedicalLink(term: string): TermData {
+  return {
+    term,
+    source: "Merriam-Webster Medical Dictionary (link-out — site blocks automated fetching)",
+    url: `https://www.merriam-webster.com/medical/${encodeURIComponent(term.trim().replace(/ /g, "-"))}`,
+    summary: `Definition lookup for "${term}" in the Merriam-Webster Medical Dictionary.`,
+  };
+}
+
+export function fetchWikimedLink(term: string): TermData {
+  return {
+    term,
+    source: "WikiMed (link-out — offline encyclopedia app)",
+    url: `https://www.wikimed.eu/en/search.html?s=${encodeURIComponent(term)}`,
+    summary: `"${term}" in WikiMed, the offline medical encyclopedia (51,000+ articles). Install the WikiMed app for true offline access.`,
+  };
+}
+
+export function fetchMediSearchLink(term: string): TermData {
+  const q = `${term}: explain the key facts a medical student should know (definition, pathophysiology, diagnosis, treatment).`;
+  return {
+    term,
+    source: "MediSearch (AI, link-out — requires free account)",
+    url: `https://medisearch.io/en/health-education?question=${encodeURIComponent(q)}`,
+    summary: `Ask MediSearch an evidence-based, cited question about "${term}". Opens the free health-education assistant with the question pre-filled.`,
+  };
+}
+
+export function fetchOpenEvidenceLink(term: string): TermData {
+  return {
+    term,
+    source: "OpenEvidence (AI, link-out — clinician verification may be required)",
+    url: `https://openevidence.com/search/?q=${encodeURIComponent(term)}`,
+    summary: `Guideline/literature-grounded answer about "${term}" via OpenEvidence.`,
+  };
+}
+
+/* ----------------------------- Smart fallback ---------------------------- */
+
+/** Try several free backends in order; first hit wins. */
+export async function fetchWithFallback(term: string): Promise<TermData | null> {
+  const attempts = [fetchPubChem, fetchSnomed, fetchWikipedia];
+  for (const fn of attempts) {
+    try {
+      const d = await fn(term);
+      if (d) return d;
+    } catch { /* next */ }
+  }
+  return null;
 }
 
 /* ------------------------------- helpers --------------------------------- */

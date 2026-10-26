@@ -1,9 +1,25 @@
 import { PluginSettingTab, App, Setting } from "obsidian";
 import type TermScannerPlugin from "./main";
 
+export type SourceId =
+  | "fallback"
+  | "wikipedia"
+  | "pubchem"
+  | "snomed"
+  | "anatomy"
+  | "drugs"
+  | "metathesaurus"
+  | "flexikon"
+  | "mwmedical"
+  | "wikimed"
+  | "medisearch"
+  | "openevidence"
+  | "umls"
+  | "amboss";
+
 export interface TermScannerSettings {
   /** Which backend to query for term data. */
-  source: "wikipedia" | "pubchem" | "umls" | "amboss";
+  source: SourceId;
   /** Optional AMBOSS session cookie (only useful if you pay for AMBOSS). */
   ambossCookie: string;
   /** Folder where generated notes are stored. Empty = vault root. */
@@ -17,13 +33,16 @@ export interface TermScannerSettings {
 }
 
 export const DEFAULT_SETTINGS: TermScannerSettings = {
-  source: "wikipedia",
+  source: "fallback",
   ambossCookie: "",
   noteFolder: "AMBOSS",
   minTermLength: 4,
   autoScan: true,
   umlsApiKey: "",
 };
+
+const SOURCE_DESC =
+  "AMBOSS content is paywalled with no public API. Free backends: Smart fallback (PubChem→SNOMED→Wikipedia), Wikipedia, PubChem, SNOMED CT / anatomy (FMA) / drug names (UMDNS-Stedman's) / NCI-Metathesaurus-style mapping via the free EBI OLS4 API. Link-out sources (Flexikon, Merriam-Webster Medical, WikiMed, MediSearch, OpenEvidence) create a note with a direct browser link because those sites block automated fetching.";
 
 export class TermScannerSettingTab extends PluginSettingTab {
   plugin: TermScannerPlugin;
@@ -39,18 +58,26 @@ export class TermScannerSettingTab extends PluginSettingTab {
 
     new Setting(containerEl)
       .setName("Data source")
-      .setDesc(
-        "AMBOSS content is behind a paywall and has no public API. Choose a free alternative: Wikipedia (general medical knowledge), PubChem (drugs & chemicals), or UMLS MetaCat2Sim (controlled medical vocabulary lookup)."
-      )
+      .setDesc(SOURCE_DESC)
       .addDropdown((drop) =>
         drop
-          .addOption("wikipedia", "Wikipedia (free, default)")
-          .addOption("pubchem", "PubChem – drugs/chemicals (free)")
+          .addOption("fallback", "Smart fallback (PubChem → SNOMED CT → Wikipedia)")
+          .addOption("wikipedia", "Wikipedia (general medical knowledge)")
+          .addOption("pubchem", "PubChem — drugs & chemicals")
+          .addOption("snomed", "SNOMED CT terminology (via EBI OLS4)")
+          .addOption("anatomy", "Anatomy terms — FMA (open TA2Viewer alternative)")
+          .addOption("drugs", "Drug terms — DRON drug ontology (via EBI OLS4)")
+          .addOption("metathesaurus", "NCI Metathesaurus-style cross-vocab map (MEDGEN)")
+          .addOption("flexikon", "DocCheck Flexikon (link-out)")
+          .addOption("mwmedical", "Merriam-Webster Medical Dictionary (link-out)")
+          .addOption("wikimed", "WikiMed offline encyclopedia (link-out)")
+          .addOption("medisearch", "MediSearch AI — cited answers (link-out, free account)")
+          .addOption("openevidence", "OpenEvidence AI (link-out, clinician verification)")
           .addOption("umls", "UMLS MetaCat2Sim (free API key required)")
           .addOption("amboss", "AMBOSS (requires paid account + cookie)")
           .setValue(this.plugin.settings.source)
           .onChange(async (value) => {
-            this.plugin.settings.source = value as TermScannerSettings["source"];
+            this.plugin.settings.source = value as SourceId;
             await this.plugin.saveSettings();
           })
       );

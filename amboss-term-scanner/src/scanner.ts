@@ -11,7 +11,23 @@ import {
 type DecorationSet = ReturnType<typeof Decoration.set>;
 import TermScannerPlugin from "./main";
 import { termRegex, TERM_SET } from "./terms";
-import { fetchWikipedia, fetchPubChem, fetchMetat2sim, fetchAmboss, TermData } from "./sources";
+import {
+  fetchWikipedia,
+  fetchPubChem,
+  fetchMetat2sim,
+  fetchAmboss,
+  fetchSnomed,
+  fetchAnatomy,
+  fetchDrugs,
+  fetchMetathesaurus,
+  fetchFlexikonLink,
+  fetchMWMedicalLink,
+  fetchWikimedLink,
+  fetchMediSearchLink,
+  fetchOpenEvidenceLink,
+  fetchWithFallback,
+  TermData,
+} from "./sources";
 import { buildNoteMarkdown, sanitizeFileName } from "./note";
 
 /* ------------------------------------------------------------------ */
@@ -152,8 +168,37 @@ export async function fetchTermData(plugin: TermScannerPlugin, term: string): Pr
       const um = await fetchMetat2sim(term, s.umlsApiKey);
       return um ?? (await fetchWikipedia(term));
     }
+    case "snomed": {
+      const sn = await fetchSnomed(term);
+      return sn ?? (await fetchWikipedia(term));
+    }
+    case "anatomy": {
+      const an = await fetchAnatomy(term);
+      return an ?? (await fetchWikipedia(term));
+    }
+    case "drugs": {
+      const dr = await fetchDrugs(term);
+      return dr ?? (await fetchPubChem(term)) ?? (await fetchWikipedia(term));
+    }
+    case "metathesaurus": {
+      const mt = await fetchMetathesaurus(term);
+      return mt ?? (await fetchSnomed(term)) ?? (await fetchWikipedia(term));
+    }
+    // Link-out sources: sites block automated fetching / need accounts, so we
+    // create a note with a direct link to look the term up there.
+    case "flexikon":
+      return fetchFlexikonLink(term);
+    case "mwmedical":
+      return fetchMWMedicalLink(term);
+    case "wikimed":
+      return fetchWikimedLink(term);
+    case "medisearch":
+      return fetchMediSearchLink(term);
+    case "openevidence":
+      return fetchOpenEvidenceLink(term);
+    case "fallback":
     default:
-      return fetchWikipedia(term);
+      return fetchWithFallback(term);
   }
 }
 
