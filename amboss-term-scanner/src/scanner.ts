@@ -70,7 +70,11 @@ function buildDecos(
       );
     }
   }
-  return cmView.DecorationSet.create(doc, decos);
+  // In Obsidian's bundle `require("@codemirror/view")` returns the live module
+  // namespace where DecorationSet.create exists; fall back to the ESM import
+  // of the namespace object if window.require is unavailable.
+  const factory = cmView?.DecorationSet ?? (cmViewFallback as any);
+  return factory.create(doc, decos);
 }
 
 /** Walk a rendered DOM tree and underline text nodes containing known terms. */
