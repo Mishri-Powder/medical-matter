@@ -1,7 +1,14 @@
 import { Notice, TFile, normalizePath } from "obsidian";
-import type { Extension, Range } from "@codemirror/state";
-import type { DecorationSet as DecorationSetType } from "@codemirror/view";
-import { EditorView, Decoration, ViewPlugin, ViewUpdate } from "@codemirror/view";
+import { Range } from "@codemirror/state";
+import type { Extension } from "@codemirror/state";
+import {
+  EditorView,
+  Decoration,
+  ViewPlugin,
+  ViewUpdate,
+} from "@codemirror/view";
+
+type DecorationSet = ReturnType<typeof Decoration.set>;
 import TermScannerPlugin from "./main";
 import { termRegex, TERM_SET } from "./terms";
 import { fetchWikipedia, fetchPubChem, fetchMetat2sim, fetchAmboss, TermData } from "./sources";
@@ -18,23 +25,18 @@ export function registerDecorations(plugin: TermScannerPlugin): void {
     highlightElement(el as HTMLElement);
   });
 
-  // Live-preview editor decoration.
-  // NOTE: `DecorationSet` exists only as a *type* in @codemirror/view; the
-  // runtime factory is attached to it at load time, so we access it through
-  // the module namespace object (same pattern used by popular Obsidian plugins).
-  const cmView = requireModule("@codemirror/view") as {
-    DecorationSet: { create: (doc: unknown, ranges: Range<Decoration>[]) => DecorationSetType };
-  };
+  // Live-preview editor decoration. `DecorationSet.create` is imported
+  // directly from @codemirror/view (it is a runtime value, not just a type).
   plugin.registerEditorExtension(
     ViewPlugin.fromClass(
       class {
-        decorations: DecorationSetType;
+        decorations: DecorationSet;
         constructor(view: EditorView) {
-          this.decorations = buildDecos(view, cmView);
+          this.decorations = buildDecos(view);
         }
         update(update: ViewUpdate) {
           if (update.docChanged || update.viewportChanged) {
-            this.decorations = buildDecos(update.view, cmView);
+            this.decorations = buildDecos(update.view);
           }
         }
       },
@@ -43,16 +45,7 @@ export function registerDecorations(plugin: TermScannerPlugin): void {
   );
 }
 
-/** Resolve an external CommonJS module at runtime (provided by Obsidian's Electron env). */
-function requireModule(name: string): any {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  try { return window.require ? window.require(name) : undefined; } catch { return undefined; }
-}
-
-function buildDecos(
-  view: EditorView,
-  cmView: { DecorationSet: { create: (doc: unknown, ranges: Range<Decoration>[]) => DecorationSetType } }
-): DecorationSetType {
+function buildDecos(view: EditorView): DecorationSet {
   const decos: Range<Decoration>[] = [];
   const doc = view.state.doc;
   const regex = termRegex();
@@ -70,11 +63,7 @@ function buildDecos(
       );
     }
   }
-  // In Obsidian's bundle `require("@codemirror/view")` returns the live module
-  // namespace where DecorationSet.create exists; fall back to the ESM import
-  // of the namespace object if window.require is unavailable.
-  const factory = cmView?.DecorationSet ?? (cmViewFallback as any);
-  return factory.create(doc, decos);
+  return Decoration.set(decos, true);
 }
 
 /** Walk a rendered DOM tree and underline text nodes containing known terms. */
