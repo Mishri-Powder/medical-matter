@@ -1,0 +1,9 @@
+{
+  "id": "amboss-term-scanner",
+  "name": "AMBOSS Term Scanner",
+  "version": "1.0.0",
+  "minAppVersion": "1.4.0",
+  "description": "Underlines medical terms found in the active note and creates reference notes from free knowledge sources (Wikipedia, PubChem, UMLS Metat2Sim). AMBOSS itself is a paid service, so this plugin uses free alternatives by default; you can plug in your own AMBOSS session cookie if you have a subscription.",
+  "author": "",
+  "isDesktopOnly": false
+}

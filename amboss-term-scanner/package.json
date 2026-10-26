@@ -1,0 +1,28 @@
+{
+  "name": "obsidian-amboss-term-scanner",
+  "version": "1.0.0",
+  "description": "Scans the active note for medical terms, underlines matches, and creates notes from free medical knowledge APIs (Wikipedia + UMLS Metat2Sim fallback) instead of paid AMBOSS content.",
+  "main": "main.js",
+  "scripts": {
+    "dev": "tsc -watch --project ./",
+    "build": "tsc -noEmit --skipLibCheck && node esbuild.config.mjs production"
+  },
+  "keywords": [
+    "obsidian",
+    "amboss",
+    "medical",
+    "wikipedia",
+    "umls"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@codemirror/state": "^6.7.6",
+    "@codemirror/view": "^6.43.15",
+    "@types/node": "^20.0.0",
+    "builtin-modules": "^3.3.0",
+    "esbuild": "^0.20.0",
+    "obsidian": "^1.4.11",
+    "typescript": "^5.3.0"
+  }
+}
