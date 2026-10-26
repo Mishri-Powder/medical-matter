@@ -23,16 +23,31 @@ functional and recommended.
 
 ## Features
 
-- **Auto-underlining** of ~400 built-in medical terms in both reading mode and
-  live preview (wavy accent underline). Skips code blocks, links, and headings.
-- **Click an underlined term** → fetches data from the selected source and
-  creates/updates `amboss - {term}.md` in your chosen folder, with frontmatter,
-  summary, details, synonyms/categories, and a source link back.
+- **Auto-underlining** of medical terms in both reading mode and live preview
+  (wavy accent underline). Detection has two layers:
+  1. a built-in dictionary (~870 disease, drug, anatomy & procedure terms), and
+  2. a morphology heuristic that flags words that *look* medical even when they
+     are not in the dictionary (`-itis`, `-ectomy`, `-oma`, `hyper-…-emia`,
+     `brady-…-cardia`, `-thrombosis`, `-centesis`, …) — with an English-word
+     stoplist to avoid false positives.
+  Skips code blocks, existing links, and headings. Terms split across wrapped
+  lines are still matched.
+- **Click an underlined term** (or Ctrl/Cmd-click in live preview) → fetches
+  data from the selected source and creates/updates `amboss - {term}.md` in
+  your chosen folder, with frontmatter, summary, details, synonyms/categories,
+  and a source link back.
+- **Wikilink replacement**: after a note is created, every occurrence of the
+  term in the document is replaced with `[[amboss - {term}|{term as written}]]`
+  (toggleable; already-linked text and inline code are never touched, so the
+  operation is idempotent).
 - **Commands** (Ctrl/Cmd+P):
-  - *Create amboss note for selection / word at cursor*
-  - *Scan document and create notes for all found terms* (batch mode)
+  - *Create amboss note for selection / word at cursor* (also linkifies all
+    occurrences of that term)
+  - *Scan document and create notes for all found terms* (batch mode + bulk
+    linkify)
 - Settings: data source, note folder, minimum term length, auto-scan toggle,
-  optional AMBOSS cookie / UMLS key.
+  heuristic detection toggle, wikilink-replacement toggle, extra/blocked term
+  lists, optional AMBOSS cookie / UMLS key.
 
 ## Install (development / manual)
 

@@ -28,6 +28,14 @@ export interface TermScannerSettings {
   minTermLength: number;
   /** Underline terms automatically when a note is opened. */
   autoScan: boolean;
+  /** Detect terms by medical word morphology, not just the built-in list. */
+  heuristicDetect: boolean;
+  /** Replace matched terms in the document with wikilinks after note creation. */
+  linkifyTerms: boolean;
+  /** Extra terms (comma/newline separated) that should always be detected. */
+  extraTerms: string;
+  /** Terms (comma/newline separated) that should never be detected. */
+  blockTerms: string;
   /** UMLS Metat2Sim API key (free registration at metat2sim.nlm.nih.gov). */
   umlsApiKey: string;
 }
@@ -38,6 +46,10 @@ export const DEFAULT_SETTINGS: TermScannerSettings = {
   noteFolder: "AMBOSS",
   minTermLength: 4,
   autoScan: true,
+  heuristicDetect: true,
+  linkifyTerms: true,
+  extraTerms: "",
+  blockTerms: "",
   umlsApiKey: "",
 };
 
@@ -145,7 +157,57 @@ export class TermScannerSettingTab extends PluginSettingTab {
         tg.setValue(this.plugin.settings.autoScan).onChange(async (v) => {
           this.plugin.settings.autoScan = v;
           await this.plugin.saveSettings();
+          this.plugin.refreshViews();
         })
       );
+
+    new Setting(containerEl)
+      .setName("Heuristic medical-term detection")
+      .setDesc(
+        "Also flag words that look medical by morphology (-itis, -ectomy, -oma, hyper-, brady- …), not just the built-in dictionary. This is what makes auto-detection cover unfamiliar terms."
+      )
+      .addToggle((tg) =>
+        tg.setValue(this.plugin.settings.heuristicDetect).onChange(async (v) => {
+          this.plugin.settings.heuristicDetect = v;
+          await this.plugin.saveSettings();
+          this.plugin.refreshViews();
+        })
+      );
+
+    new Setting(containerEl)
+      .setName("Replace terms with wikilinks")
+      .setDesc(
+        'After creating a note, replace every occurrence of the term in the document with [[amboss - {term}|{term}]].'
+      )
+      .addToggle((tg) =>
+        tg.setValue(this.plugin.settings.linkifyTerms).onChange(async (v) => {
+          this.plugin.settings.linkifyTerms = v;
+          await this.plugin.saveSettings();
+        })
+      );
+
+    new Setting(containerEl)
+      .setName("Extra terms to detect")
+      .setDesc("Comma or newline separated. These are always underlined (case-insensitive).")
+      .addTextArea((t) => {
+        t.setValue(this.plugin.settings.extraTerms).onChange(async (v) => {
+          this.plugin.settings.extraTerms = v;
+          await this.plugin.saveSettings();
+          this.plugin.refreshViews();
+        });
+        t.inputEl.rows = 3;
+      });
+
+    new Setting(containerEl)
+      .setName("Blocked terms")
+      .setDesc("Comma or newline separated. These are never flagged (e.g. common false positives).")
+      .addTextArea((t) => {
+        t.setValue(this.plugin.settings.blockTerms).onChange(async (v) => {
+          this.plugin.settings.blockTerms = v;
+          await this.plugin.saveSettings();
+          this.plugin.refreshViews();
+        });
+        t.inputEl.rows = 3;
+      });
   }
 }

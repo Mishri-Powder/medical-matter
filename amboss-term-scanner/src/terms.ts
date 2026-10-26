@@ -43,7 +43,7 @@ anthrax
 antibiotic resistance
 anticoagulant
 antidiuretic hormone
-antithrombin III
+antithrombin iii
 aorta
 apoptosis
 arrhythmia
@@ -303,7 +303,7 @@ osteogenesis imperfecta
 osteomalacia
 osteoporosis
 otosclerosis
-Paget disease
+paget disease
 palpitation
 pancreatitis
 panic disorder
@@ -354,13 +354,13 @@ rigor mortis
 rosacea
 rubinstein-taybi syndrome
 salmonella infection
-Sars-Cov-2
+sars-cov-2
 scabies
 schistosomiasis
 scleroderma
 scotoma
 seizure disorder
-selective IgA deficiency
+selective iga deficiency
 sickle cell disease
 siadh
 silent myocardial ischemia
@@ -377,13 +377,13 @@ stroke
 subarachnoid hemorrhage
 subdural hematoma
 superior vena cava syndrome
-SLE
+sle
 systemic lupus erythematosus
-T wave inversion
+t wave inversion
 tachyarrhythmia
-Takayasu arteritis
+takayasu arteritis
 tamoxifen
-Tietze syndrome
+tietze syndrome
 torsades de pointes
 toxic shock syndrome
 transient ischemic attack
@@ -408,12 +408,472 @@ volvulus
 vomiting
 waterhouse-friderichsen syndrome
 wilms tumor
-Wilson disease
+wilson disease
 wiskott-aldrich syndrome
 wolff-parkinson-white syndrome
-Wegener granulomatosis
+wegener granulomatosis
 xanthelasma
-zenker diverticulum`;
+zenker diverticulum
+heparin
+warfarin
+apixaban
+rivaroxaban
+dabigatran
+clopidogrel
+aspirin
+atorvastatin
+simvastatin
+rosuvastatin
+metformin
+lisinopril
+enalapril
+ramipril
+losartan
+amlodipine
+furosemide
+spironolactone
+amiodarone
+adenosine
+epinephrine
+norepinephrine
+dopamine
+dobutamine
+nitroglycerin
+morphine
+fentanyl
+midazolam
+propofol
+ketamine
+dexmedetomidine
+omeprazole
+pantoprazole
+ranitidine
+ondansetron
+lansoprazole
+ciprofloxacin
+azithromycin
+doxycycline
+amoxicillin
+vancomycin
+meropenem
+piperacillin
+gentamicin
+tetracycline
+erythromycin
+clindamycin
+linezolid
+daptomycin
+fluconazole
+itraconazole
+voriconazole
+posaconazole
+acyclovir
+oseltamivir
+ganciclovir
+ribavirin
+tenofovir
+lamivudine
+zidovudine
+efavirenz
+raltegravir
+insulin glargine
+insulin lispro
+levothyroxine
+methimazole
+propylthiouracil
+prednisone
+dexamethasone
+hydrocortisone
+methylprednisolone
+fludrocortisone
+testosterone
+estradiol
+oxytocin
+sumatriptan
+rizatriptan
+albuterol
+salmeterol
+fluticasone
+tiotropium
+ipratropium
+montelukast
+theophylline
+zafirlukast
+budesonide
+formoterol
+haloperidol
+risperidone
+olanzapine
+quetiapine
+aripiprazole
+clozapine
+lithium
+valproate
+carbamazepine
+lamotrigine
+levetiracetam
+topiramate
+phenytoin
+gabapentin
+pregabalin
+sertraline
+fluoxetine
+paroxetine
+citalopram
+escitalopram
+venlafaxine
+duloxetine
+bupropion
+mirtazapine
+trazodone
+amitriptyline
+nortriptyline
+imipramine
+phenelzine
+selegiline
+donepezil
+rivastigmine
+memantine
+pyridostigmine
+levodopa
+carbidopa
+pramipexole
+ropinirole
+entacapone
+rasagiline
+apomorphine
+triamterene
+hydrochlorothiazide
+chlorthalidone
+indapamide
+mannitol
+acetazolamide
+bumetanide
+torsemide
+verapamil
+diltiazem
+nifedipine
+nicardipine
+clevidipine
+hydralazine
+minoxidil
+clonidine
+methyldopa
+doxazosin
+tamsulosin
+finasteride
+sildenafil
+tadalafil
+vardenafil
+allopurinol
+febuxostat
+colchicine
+naproxen
+ibuprofen
+diclofenac
+celecoxib
+meloxicam
+ketorolac
+acetaminophen
+tramadol
+codeine
+oxycodone
+hydrocodone
+methadone
+buprenorphine
+naloxone
+flumazenil
+succinylcholine
+rocuronium
+vecuronium
+cisatracurium
+atracurium
+neostigmine
+sugammadex
+physostigmine
+echothiophate
+pilocarpine
+timolol
+brimonidine
+latanoprost
+dorzolamide
+apraclonidine
+ceftriaxone
+cefazolin
+cephalexin
+ceftazidime
+cefepime
+ceftaroline
+amikacin
+tobramycin
+streptomycin
+neomycin
+polymyxin
+colistin
+tigecycline
+minocycline
+metronidazole
+tinidazole
+nitrofurantoin
+sulfamethoxazole
+trimethoprim
+dapsone
+rifampin
+isoniazid
+pyrazinamide
+ethambutol
+bedaquiline
+chloramphenicol
+foscarnet
+cidofovir
+docetaxel
+paclitaxel
+cabazitaxel
+vincristine
+vinblastine
+bleomycin
+busulfan
+carmustine
+lomustine
+cisplatin
+carboplatin
+oxaliplatin
+cyclophosphamide
+ifosfamide
+melphalan
+chlorambucil
+fludarabine
+cladribine
+gemcitabine
+5-fluorouracil
+capecitabine
+methotrexate
+pegaspargase
+daunorubicin
+epirubicin
+idarubicin
+mitoxantrone
+etoposide
+teniposide
+irinotecan
+topotecan
+dactinomycin
+pemetrexed
+rituximab
+trastuzumab
+bevacizumab
+cetuximab
+panitumumab
+nivolumab
+pembrolizumab
+atezolizumab
+durvalumab
+ipilimumab
+oblimerisen
+tocilizumab
+adalimumab
+infliximab
+etanercept
+golimumab
+certolizumab
+ustekinumab
+vedolizumab
+omalizumab
+epoetin alfa
+filgrastim
+pegfilgrastim
+eltrombopag
+romiplostim
+interferon beta
+interferon alfa
+imatinib
+dasatinib
+nilotinib
+ruxolitinib
+ibrutinib
+venetoclax
+palbociclib
+everolimus
+temsirolimus
+sorafenib
+sunitinib
+axitinib
+pazopanib
+lenalidomide
+thalidomide
+bortezomib
+carfilzomib
+ixazomib
+daratumumab
+fulvestrant
+anastrozole
+letrozole
+exemestane
+abiraterone
+enzalutamide
+leuprolide
+goserelin
+degarelix
+octreotide
+lanreotide
+teriparatide
+denosumab
+zoledronic acid
+pamidronate
+alendronate
+risedronate
+ibandronate
+raloxifene
+somatropin
+desmopressin
+liothyronine
+methylergonovine
+ergotamine
+cabergoline
+bromocriptine
+quinagolide
+dinoprostone
+misoprostol
+mifepristone
+medroxyprogesterone
+norethindrone
+ethinylestradiol
+conjugated estrogens
+raltegravite
+maraviroc
+enfuvirtide
+dolutegravir
+bictegravir
+elvitegravir
+cobicistat
+darunavir
+atazanavir
+lopinavir
+fosamprenavir
+tipranavir
+etravirine
+rilpivirine
+dorbavirine
+iprocrin
+hyperlipidemia
+hypertriglyceridemia
+dyslipidemia
+hypertension
+hypotension
+intracranial hypertension
+angioplasty
+thrombectomy
+thrombolysis
+embolectomy
+endarterectomy
+paracentesis
+thoracentesis
+lumbar puncture
+electroencephalography
+echocardiography
+magnetic resonance imaging
+computed tomography
+positron emission tomography
+ultrasonography
+mastoiditis
+cholecystitis
+diverticulitis
+appendicitis
+gastritis
+esophagitis
+duodenitis
+jejunitis
+ileitis
+colitis
+proctitis
+cystitis
+orchitis
+epididymitis
+vulvovaginitis
+blepharitis
+dacryocystitis
+sialadenitis
+tonsillitis
+pharyngitis
+laryngitis
+tracheitis
+bronchitis
+arthritis
+tendonitis
+fasciitis
+myositis
+dermatitis
+nephritis
+ureteritis
+salpingitis
+endometritis
+adnexitis
+periostitis
+osteomyelitis
+cerebritis
+carditis
+arteritis
+venulitis
+lymphangitis
+celulitis
+erysipelas
+impetigo
+folliculitis
+furunculosis
+carbuncle
+paronychia
+hidradenitis
+acne vulgaris
+psoriasis
+eczema
+dermatitis herpetiformis
+pityriasis versicolor
+tinea corporis
+tinea pedis
+onychomycosis
+asbestosis
+silicosis
+coal worker's pneumoconiosis
+byssinosis
+berylliosis
+anthracosis
+ascariasis
+ancylostomiasis
+strongyloidiasis
+trichuriasis
+enterobiasis
+toxocariasis
+echinococcosis
+cysticercosis
+dracunculiasis
+loiasis
+onchocerciasis
+filariasis
+trichomoniasis
+giardiasis
+cryptosporidiosis
+isosiasis
+cyclosporiasis
+sarcocystosis
+babesiosis
+trypanosomiasis
+leishmaniasis
+toxoplasmosis
+amebiasis
+balantidiasis
+acanthamoebiasis
+naegleriasis
+clonorchiasis
+opisthorchiasis
+paragonimiasis
+fascioliasis
+dicrocoeliasis
+metagonimiasis
+gnathostomiasis
+anisakiasis
+capillariasis
+trichostrongyliasis
+oxyuriasis`;
 
 export const TERM_SET: Set<string> = new Set(
   TERMS.split("\n").map((t) => t.trim().toLowerCase()).filter(Boolean)
